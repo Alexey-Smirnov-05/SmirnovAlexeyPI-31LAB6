@@ -4,7 +4,7 @@ int main() {
     system("chcp 1251");
     setlocale(LC_ALL, "RUS");
 
-    AdvancedPlaylist playlist; // Используем новый производный класс
+    AdvancedPlaylist playlist("My Favorite Songs"); // Создаем объект производного класса с именем плейлиста
     User user(&playlist);
     Volume volume;
 
@@ -22,6 +22,8 @@ int main() {
         cout << ("6. Удалить трек\n");
         cout << ("7. Просмотреть треки в плейлисте\n");
         cout << ("8. Выход\n");
+        cout << ("9. Переименовать плейлист\n");
+        cout << ("10. Воспроизвести конкретный трек\n");
         cout << ("Действие: ");
         scanf("%d", &choice);
 
@@ -43,21 +45,22 @@ int main() {
             volume.changeVolume(new_volume);
             break;
         }
-        case 2:
+        case 2: {
             if (playlist.getTotalNumberOfTracks() > 0) {
-                playlist.playSong(); // Вызов виртуальной функции
+                playlist.playSong(); // Вызов переопределенной виртуальной функции
             }
             else {
                 cout << "Нет треков в плейлисте\n";
             }
             break;
+        }
         case 3:
             if (playlist.getTotalNumberOfTracks() > 0) {
                 Pause pause(&playlist);
                 pause.pauseSong();
             }
             else {
-                cout << ("Нет треков в пл ейлисте\n");
+                cout << ("Нет треков в плейлисте\n");
             }
             break;
         case 4:
@@ -103,10 +106,40 @@ int main() {
         }
         case 8:
             return 0;
+        case 9: {
+            string newName;
+            cout << "Введите новое имя плейлиста: ";
+            cin >> ws;
+            getline(cin, newName);
+            playlist.setName(newName);
+            cout << "Имя плейлиста изменено на: " << playlist.getName() << endl;
+            break;
+        }
+        case 10: {
+            int index;
+            cout << "Введите индекс трека для воспроизведения: ";
+            cin >> index;
+            playlist.playSpecificSong(index - 1);
+            break;
+        }
         default:
             cout << "Ошибка выбора действия\n";
         }
         cout << ("\n\n");
     }
+
+    // Пример динамического полиморфизма
+    Playlist* basePlaylist = new AdvancedPlaylist();
+    basePlaylist->addSong(Track("BaseTrack"));
+    basePlaylist->playSong(); // Вызов виртуальной функции через указатель на базовый класс
+
+    AdvancedPlaylist* advancedPlaylist = dynamic_cast<AdvancedPlaylist*>(basePlaylist);
+
+    if (advancedPlaylist) {
+        advancedPlaylist->playSpecificSong(0);
+    }
+
+    delete basePlaylist;
+
     return 0;
 }

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <fstream> 
+#include <vector>
 
 using namespace std;
 
@@ -14,12 +15,13 @@ using namespace std;
 class Media {
 public:
     virtual void playSong() = 0; // Чисто виртуальная функция
+    virtual ~Media() {} // Виртуальный деструктор
 };
 
 // Класс для хранения информации о треке
 class Track : public Media { // Наследование от Media
 private:
-    std::string title; // Используем std::string вместо char[]
+    std::string title;
 public:
     Track() {}
     Track(const std::string& title) : title(title) {}
@@ -52,52 +54,37 @@ public:
 // Класс для хранения плейлиста
 class Playlist : public Media { // Наследование от Media
 protected: // Модификатор protected
-    Track* tracks;
-    int total_number_of_tracks;
+    std::vector<Track> tracks; // Используем std::vector вместо массива
     int current_track;
     static int instance_count; // Статическое поле
 public:
-    Playlist() : total_number_of_tracks(0), current_track(0) {
-        tracks = new Track[1];
+    Playlist() : current_track(0) {
         instance_count++;
     }
 
-    // Конструктор копии
-    Playlist(const Playlist& other) {
-        total_number_of_tracks = other.total_number_of_tracks;
-        current_track = other.current_track;
-
-        // Создаем новый массив и копируем данные
-        tracks = new Track[total_number_of_tracks];
-        for (int i = 0; i < total_number_of_tracks; i++) {
-            tracks[i] = other.tracks[i];
-        }
+    Playlist(const Playlist& other) : current_track(other.current_track), tracks(other.tracks) {
+        instance_count++;
     }
 
-    // Перегрузка оператора присваивания
     Playlist& operator=(const Playlist& other) {
         if (this != &other) {
-            // Удаляем старый массив
-            delete[] tracks;
-
-            total_number_of_tracks = other.total_number_of_tracks;
             current_track = other.current_track;
-
-            // Создаем новый массив и копируем данные
-            tracks = new Track[total_number_of_tracks];
-            for (int i = 0; i < total_number_of_tracks; i++) {
-                tracks[i] = other.tracks[i];
-            }
+            tracks = other.tracks;
         }
         return *this;
     }
 
     virtual void playSong() override { // Виртуальная функция
-        cout << "Сейчас играет: " << tracks[current_track].getTitle() << endl;
+        if (!tracks.empty()) {
+            cout << "Сейчас играет: " << tracks[current_track].getTitle() << endl;
+        }
+        else {
+            cout << "Плейлист пуст." << endl;
+        }
     }
 
+
     ~Playlist() {
-        delete[] tracks;
         instance_count--;
     }
 
@@ -106,37 +93,23 @@ public:
     }
 
     void viewSongs() {
-        for (int i = 0; i < total_number_of_tracks; i++) {
+        for (size_t i = 0; i < tracks.size(); i++) {
             cout << i + 1 << ". " << tracks[i] << endl;
         }
     }
 
     void addSong(const Track& song) {
-        Track* newTracks = new Track[total_number_of_tracks + 1];
-        for (int i = 0; i < total_number_of_tracks; i++) {
-            newTracks[i] = tracks[i];
-        }
-        newTracks[total_number_of_tracks] = song;
-        delete[] tracks;
-        tracks = newTracks;
-        total_number_of_tracks++;
+        tracks.push_back(song);
     }
 
     void removeSong(int index) {
-        for (int i = index; i < total_number_of_tracks - 1; i++) {
-            tracks[i] = tracks[i + 1];
+        if (index >= 0 && index < tracks.size()) {
+            tracks.erase(tracks.begin() + index);
         }
-        total_number_of_tracks--;
-        Track* newTracks = new Track[total_number_of_tracks];
-        for (int i = 0; i < total_number_of_tracks; i++) {
-            newTracks[i] = tracks[i];
-        }
-        delete[] tracks;
-        tracks = newTracks;
     }
 
     void getSongByIndex(int index, Track*& song) { // Возврат через указатель
-        if (index >= 0 && index < total_number_of_tracks) {
+        if (index >= 0 && index < tracks.size()) {
             song = &tracks[index];
         }
         else {
@@ -145,16 +118,16 @@ public:
     }
 
     void getSongByIndex(int index, Track& song) { // Возврат через ссылку
-        if (index >= 0 && index < total_number_of_tracks) {
+        if (index >= 0 && index < tracks.size()) {
             song = tracks[index];
         }
     }
 
     int getTotalNumberOfTracks() {
-        return total_number_of_tracks;
+        return tracks.size();
     }
 
-    Track* getTracks() {
+    std::vector<Track>& getTracks() {
         return tracks;
     }
 
@@ -193,7 +166,7 @@ public:
             throw runtime_error("Ошибка открытия файла");
         }
 
-        for (int i = 0; i < total_number_of_tracks; i++) {
+        for (size_t i = 0; i < tracks.size(); i++) {
             file << tracks[i].getTitle() << '\n'; // Записываем строки в файл
         }
 
@@ -203,18 +176,45 @@ public:
 
 // Новый производный класс
 class AdvancedPlaylist : public Playlist {
+private:
+    string name;
 public:
-    AdvancedPlaylist() : Playlist() {} // Вызов конструктора базового класса
-
-    void playSong() override { // Переопределение виртуальной функции
-        cout << "Играет из AdvancedPlaylist: " << tracks[current_track].getTitle() << endl;
-    }
+    AdvancedPlaylist() : Playlist(), name("MyPlaylist") {} // Вызов конструктора базового класса
+    AdvancedPlaylist(const string& name) : Playlist(), name(name) {}
+    AdvancedPlaylist(const AdvancedPlaylist& other) : Playlist(other), name(other.name) {}
 
     AdvancedPlaylist& operator=(const AdvancedPlaylist& other) {
         if (this != &other) {
-            Playlist::operator=(other); // Вызов оператора присваивания базового класса
+            Playlist::operator=(other);
+            name = other.name;
         }
         return *this;
+    }
+
+    void playSong() override { // Переопределение виртуальной функции
+        if (!tracks.empty()) {
+            cout << "Играет из AdvancedPlaylist '" << name << "': " << tracks[current_track].getTitle() << endl;
+        }
+        else {
+            cout << "Плейлист '" << name << "' пуст." << endl;
+        }
+    }
+
+    void playSpecificSong(int index) {
+        if (index >= 0 && index < tracks.size()) {
+            cout << "Играет конкретный трек: " << tracks[index].getTitle() << endl;
+        }
+        else {
+            cout << "Неверный индекс трека." << endl;
+        }
+    }
+
+    void setName(const string& name) {
+        this->name = name;
+    }
+
+    string getName() const {
+        return name;
     }
 };
 
@@ -263,7 +263,7 @@ private:
 public:
     Playback(Playlist* playlist, int current_track) : playlist(playlist), current_track(current_track) {}
     void playSong() {
-        cout << "Сейчас играет: " << playlist->getTracks()[current_track].getTitle() << endl;
+        playlist->playSong(); // Вызов виртуальной функции из Playback
     }
 };
 
