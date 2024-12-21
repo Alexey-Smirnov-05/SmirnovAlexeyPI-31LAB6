@@ -10,6 +10,12 @@
 
 using namespace std;
 
+// Абстрактный класс для медиа
+class Media {
+public:
+    virtual void playSong() = 0; // Чисто виртуальная функция
+};
+
 // Класс для хранения информации о треке
 class Track {
 private:
