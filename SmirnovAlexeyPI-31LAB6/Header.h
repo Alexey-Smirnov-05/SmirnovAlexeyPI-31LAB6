@@ -209,6 +209,13 @@ public:
     void playSong() override { // Переопределение виртуальной функции
         cout << "Играет из AdvancedPlaylist: " << tracks[current_track].getTitle() << endl;
     }
+
+    AdvancedPlaylist& operator=(const AdvancedPlaylist& other) {
+        if (this != &other) {
+            Playlist::operator=(other); // Вызов оператора присваивания базового класса
+        }
+        return *this;
+    }
 };
 
 int Playlist::instance_count = 0; // Инициализация статического поля

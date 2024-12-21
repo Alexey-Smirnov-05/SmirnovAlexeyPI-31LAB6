@@ -4,7 +4,7 @@ int main() {
     system("chcp 1251");
     setlocale(LC_ALL, "RUS");
 
-    Playlist playlist;
+    AdvancedPlaylist playlist; // Используем новый производный класс
     User user(&playlist);
     Volume volume;
 
@@ -45,8 +45,7 @@ int main() {
         }
         case 2:
             if (playlist.getTotalNumberOfTracks() > 0) {
-                Playback playback(&playlist, playlist.getCurrentTrack());
-                playback.playSong();
+                playlist.playSong(); // Вызов виртуальной функции
             }
             else {
                 cout << "Нет треков в плейлисте\n";
@@ -58,7 +57,7 @@ int main() {
                 pause.pauseSong();
             }
             else {
-                cout << ("Нет треков в плейлисте\n");
+                cout << ("Нет треков в пл ейлисте\n");
             }
             break;
         case 4:
