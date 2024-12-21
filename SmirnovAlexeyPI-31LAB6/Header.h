@@ -17,7 +17,7 @@ public:
 };
 
 // Класс для хранения информации о треке
-class Track {
+class Track : public Media { // Наследование от Media
 private:
     std::string title; // Используем std::string вместо char[]
 public:
@@ -42,11 +42,16 @@ public:
         os << track.title;
         return os;
     }
+
+    void playSong() override { // Реализация виртуальной функции
+        cout << "Играет трек: " << title << endl;
+    }
 };
 
+
 // Класс для хранения плейлиста
-class Playlist {
-private:
+class Playlist : public Media { // Наследование от Media
+protected: // Модификатор protected
     Track* tracks;
     int total_number_of_tracks;
     int current_track;
@@ -85,6 +90,10 @@ public:
             }
         }
         return *this;
+    }
+
+    virtual void playSong() override { // Виртуальная функция
+        cout << "Сейчас играет: " << tracks[current_track].getTitle() << endl;
     }
 
     ~Playlist() {
