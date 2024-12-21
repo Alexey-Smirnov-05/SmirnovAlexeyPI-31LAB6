@@ -201,6 +201,16 @@ public:
     }
 };
 
+// Новый производный класс
+class AdvancedPlaylist : public Playlist {
+public:
+    AdvancedPlaylist() : Playlist() {} // Вызов конструктора базового класса
+
+    void playSong() override { // Переопределение виртуальной функции
+        cout << "Играет из AdvancedPlaylist: " << tracks[current_track].getTitle() << endl;
+    }
+};
+
 int Playlist::instance_count = 0; // Инициализация статического поля
 
 // Класс для демонстрации признака ассоциаций
